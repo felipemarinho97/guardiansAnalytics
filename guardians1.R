@@ -5,7 +5,8 @@ library(lubridate)
 library(ggplot2)
 library(tidyr)
 
-setwd("~/guardians")
+#setwd("~/guardians") seu workspace
+setwd("/Users/amandaluna/Documents/guardians")
 dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
 
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
@@ -40,3 +41,13 @@ lcc2_acesso %>% ggplot(aes(x = hora_pura)) + geom_bar()
 lcc1_acesso <- sessoes_abertas %>% filter(lab == "lcc1")
 lcc1_acesso %>% ggplot(aes(x = hora_pura)) + geom_bar() # maior quantudade de acesso as 14 hrs
 lcc1_acesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar()
+
+# usuarios que mais logaram nas maquinas
+sessoes_por_usuario <- sessoes_abertas %>% subset(select=c("usuario"))
+acessos_usuarios <- sessoes_por_usuario %>% group_by(usuario) %>% summarise(num_acessos = n())
+acessos_usuarios <- acessos_usuarios[order(acessos_usuarios$num_acessos,decreasing = T),]
+
+# maquinas que tiveram mais acessos
+sessoes_por_maquina <- sessoes_abertas %>% subset(select=c("maquina"))
+acessos_maquinas <- sessoes_por_maquina %>% group_by(maquina) %>% summarise(num_acessos = n())
+acessos_maquinas <- acessos_maquinas[order(acessos_maquinas$num_acessos,decreasing = T),]
