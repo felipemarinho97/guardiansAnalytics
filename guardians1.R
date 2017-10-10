@@ -22,7 +22,7 @@ freq_mensal %>% ggplot(aes(x = dia_da_semana, y = media_acessos)) + geom_bar(sta
 
 # extraindo colunas do lab, da "hora pura", do turno
 r <- setNames(do.call(rbind.data.frame, strsplit(sessoes_abertas$maquina, "-")), c("lab", "maquina"))
-sessoes_abertas <- sessoes_abertas %>% mutate(lab = r$lab)
+bind_cols(sessoes_abertas, r[1])
 sessoes_abertas <- sessoes_abertas %>% mutate(hora_pura = hour(sessoes_abertas$hora))
 sessoes_abertas <- sessoes_abertas %>% mutate(turno = if_else(hora_pura %in% 05:11, "manha",
                                                               if_else(hora_pura %in% 12:17, "tarde",
