@@ -14,6 +14,20 @@ dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquin
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
 sessoes_abertas <- dados %>% filter(status == "opened")
 
+# super data frame com todos os dados
+super <- setNames(do.call(rbind.data.frame, strsplit(sessoes_abertas$maquina, "-")), c("lab", "maquina"))
+super <- sessoes_abertas %>% mutate(hora_pura = hour(sessoes_abertas$hora))
+super <- super %>% mutate(turno = if_else(hora_pura %in% 05:11, "manha",
+                                          if_else(hora_pura %in% 12:17, "tarde",
+                                                  if_else(hora_pura %in% 18:24, "noite", "madrugada"))))
+super <- super %>% mutate(horario = if_else(hora_pura %in% 08:09, "08-10", # 14h as 16h maior pico
+                                            if_else(hora_pura %in% 10:11, "10-12",
+                                                    if_else(hora_pura %in% 12:14, "12-13",
+                                                            if_else(hora_pura %in% 14:15, "14-16",
+                                                                    if_else(hora_pura %in% 18:24, "18h+", "06-08"))))))
+r <- setNames(do.call(rbind.data.frame, strsplit(sessoes_abertas$maquina, "-")), c("lab", "maquina"))
+super <- super %>% mutate(lab = r$lab)
+
 # acessos pelo dia do mes e da semana
 sessoes <- sessoes_abertas %>% subset(select=c("dia_da_semana", "dia_do_mes"))
 freq_dia <- sessoes %>% group_by(dia_da_semana, dia_do_mes) %>% summarise(num_acessos = n())
