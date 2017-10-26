@@ -7,8 +7,8 @@ library(tidyr)
 library(cluster) # Adicionei pra plotar o kmeans
 library(fpc) # Adicionei pra plotar o kmeans
 
-#setwd("~/guardians") # workspace Livia
-setwd("/Users/amandaluna/Documents/guardians") # workspace Amanda
+setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
+#setwd("/Users/amandaluna/Documents/guardians") # workspace Amanda
 dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
 
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
@@ -28,6 +28,11 @@ super <- super %>% mutate(horario = if_else(hora_pura %in% 08:09, "08-10", # 14h
 r <- setNames(do.call(rbind.data.frame, strsplit(sessoes_abertas$maquina, "-")), c("lab", "maquina"))
 super <- super %>% mutate(lab = r$lab)
 
+# acessos por lab
+lab <- super
+lab<- lab %>% group_by(lab, usuario) %>% mutate(n_acessos=n()) #%>%
+  inner_join(lab, by='usuario')
+lab
 # acessos pelo dia do mes e da semana
 sessoes <- sessoes_abertas %>% subset(select=c("dia_da_semana", "dia_do_mes"))
 freq_dia <- sessoes %>% group_by(dia_da_semana, dia_do_mes) %>% summarise(num_acessos = n())
