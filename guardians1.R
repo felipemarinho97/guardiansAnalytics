@@ -7,8 +7,8 @@ library(tidyr)
 library(cluster) # Adicionei pra plotar o kmeans
 library(fpc) # Adicionei pra plotar o kmeans
 
-setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
-#setwd("/Users/amandaluna/Documents/guardians") # workspace Amanda
+#setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
+setwd("/Users/amandaluna/Documents/guardiansAnalytics") # workspace Amanda
 dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
 
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
@@ -74,7 +74,7 @@ lcc1_acesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar()
 
 # usuarios que mais logaram nas maquinas
 sessoes_por_usuario <- sessoes_abertas %>% subset(select=c("usuario"))
-acessos_usuarios <- sessoes_por_usuario %>% group_by(usuario) %>% summarise(num_acessos = n())
+acessos_usuarios <- sessoes_abertas %>% group_by(usuario) %>% summarise(num_acessos = n())
 acessos_usuarios <- acessos_usuarios[order(acessos_usuarios$num_acessos,decreasing = T),]
 
 # maquinas que tiveram mais acessos
@@ -82,6 +82,18 @@ sessoes_por_maquina <- sessoes_abertas %>% subset(select=c("maquina"))
 acessos_maquinas <- sessoes_por_maquina %>% group_by(maquina) %>% summarise(num_acessos = n())
 acessos_maquinas <- acessos_maquinas[order(acessos_maquinas$num_acessos,decreasing = T),] # As do começo do lcc2
 
+########################### SETUP PRA FAZER A TABELA DO KMEANS ###############################
+########################### SE MEXER MORRE ###################################################
+teste <- super %>% subset(select = c("usuario","horario"))
+teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
+a <- teste %>% filter(horario == "10-12")
+names(a)[3] <- c("10h-12h")
+a <- a[,-2]
+acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
+#tabela <- full_join(a,b,by = "usuario")
+acessos_usuarios[,15][is.na(acessos_usuarios[,15])] <- 0
+dataKmeans <- acessos_usuarios %>% select(usuario,num_acessos,lcc1,lcc2,segunda,terça,quarta,quinta,sexta,`6h-8h`,`8h-10h`,`10h-12h`,`12h-14h`,`14h-16h`,`18h+`) 
 ######################################################
 clus <- kmeans(acessos_usuarios,centers = 4,nstart = 25) # Só deu pra fazer kmeans disso :/
 clusplot(acessos_usuarios,clus$cluster,color = T,shade = T,labels = 2,lines = 0) # Deu esse ngç bugado
+
