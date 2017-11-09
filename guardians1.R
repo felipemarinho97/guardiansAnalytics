@@ -84,16 +84,17 @@ sessoes_por_maquina <- sessoes_abertas %>% subset(select=c("maquina"))
 acessos_maquinas <- sessoes_por_maquina %>% group_by(maquina) %>% summarise(num_acessos = n())
 acessos_maquinas <- acessos_maquinas[order(acessos_maquinas$num_acessos,decreasing = T),] # As do começo do lcc2
 
-########################### SETUP PRA FAZER A TABELA DO KMEANS ###############################
-########################### SE MEXER MORRE ###################################################
-teste <- super %>% subset(select = c("usuario","lab"))
-teste <- teste %>% group_by(usuario,lab) %>% summarise(num_acessos = n())
-a <- teste %>% filter(lab == "lcc1")
-names(a)[3] <- c("lcc1")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
+########################### setup para o dataframe do kmeans ###############################
+# Cada bloco representa uma coluna sendo adicionada ao dataframe
+
+teste <- super %>% subset(select = c("usuario","lab"))# Seleciona apenas os atributos que me interessam
+teste <- teste %>% group_by(usuario,lab) %>% summarise(num_acessos = n()) # Sumarizo os acessos
+a <- teste %>% filter(lab == "lcc1") # Filtro de acordo com o meu interesse
+names(a)[3] <- c("lcc1") # Nomeio a coluna
+a <- a[,-2] # Retiro a coluna que não me interessa
+acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario") # Agrupo com o dataframe principal
 #tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,3][is.na(acessos_usuarios[,3])] <- 0
+acessos_usuarios[,3][is.na(acessos_usuarios[,3])] <- 0 # Onde tiver NA coloco 0
 
 teste <- super %>% subset(select = c("usuario","lab"))
 teste <- teste %>% group_by(usuario,lab) %>% summarise(num_acessos = n())
@@ -223,11 +224,35 @@ names(teste)[2] <- c("acesso__por_maquina")
 acessos_usuarios <- full_join(acessos_usuarios,teste, by = "usuario")
 #tabela <- full_join(a,b,by = "usuario")
 
+dataKmeans <- acessos_usuarios %>% subset(select = c("num_acessos","6h-8h","8h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+")) # filtrando para apenas número de acessos e horários
 
-dataKmeans <- acessos_usuarios %>% select(usuario,num_acessos,acesso__por_maquina,lcc1,lcc2,Mon,Tues,Wed,Thurs,Fri,`6h-8h`,`8h-10h`,`10h-12h`,`12h-14h`,`14h-16h`,`16h-18h`,`18h+`) 
-names(dataKmeans)[2] <- c("acessos_totais")
-names(dataKmeans)[3] <- c("qtd_maquinas")
-######################################################
-clus <- kmeans(acessos_usuarios,centers = 4,nstart = 25) # Só deu pra fazer kmeans disso :/
-clusplot(acessos_usuarios,clus$cluster,color = T,shade = T,labels = 2,lines = 0) # Deu esse ngç bugado
+######################### Vendo o silhouette #############################
+distancia = as.matrix(dist(dataKmeans)) # Matriz de dissimilaridade
+clus <- kmeans(dataKmeans,centers = 2) 
+sil1 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 2 centros
+clus <- kmeans(dataKmeans,centers = 3)
+sil2 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 3 centros
+clus <- kmeans(dataKmeans,centers = 4)
+sil3 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 4 centros
+clus <- kmeans(dataKmeans,centers = 5)
+sil4 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 5 centros
+clus <- kmeans(dataKmeans,centers = 6)
+sil5 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 6 centros
+clus <- kmeans(dataKmeans,centers = 7)
+sil6 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 7 centros
+clus <- kmeans(dataKmeans,centers = 8)
+sil7 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 8 centros
+clus <- kmeans(dataKmeans,centers = 9)
+sil8 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 9 centros
+clus <- kmeans(dataKmeans,centers = 10)
+sil9 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 10 centros
+
+dataSil <- data.frame(centros = c(2,3,4,5,6,7,8,9,10),distSil = c(sil1,sil2,sil3,sil4,sil5,sil6,sil7,sil8,sil9)) # dataframe dos silhouettes relacionando centrosxsilhouette
+dataSil %>% ggplot(aes(x = centros,y = distSil)) + geom_line() # plotando o gráfico
+
+############ K-MEANS ############
+clus <- kmeans(dataKmeans,centers = 2) # kmeans com 2 centros
+clus$centers # Verificando os centros
+table(clus$cluster) # Vendo quantos pontos estão em cada grupo 
+clusplot(dataKmeans,clus$cluster,color = T,shade = T) # plotando o gráfico do kmeans
 
