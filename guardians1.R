@@ -251,7 +251,7 @@ dataSil <- data.frame(centros = c(2,3,4,5,6,7,8,9,10),distSil = c(sil1,sil2,sil3
 dataSil %>% ggplot(aes(x = centros,y = distSil)) + geom_line() # plotando o gráfico
 
 ############ K-MEANS ############
-clus <- kmeans(dataKmeans,centers = 2) # kmeans com 2 centros
+clus <- kmeans(dataKmeans,centers = 3) # kmeans com 2 centros
 clus$centers # Verificando os centros
 table(clus$cluster) # Vendo quantos pontos estão em cada grupo 
 clusplot(dataKmeans,clus$cluster,color = T,shade = T) # plotando o gráfico do kmeans
