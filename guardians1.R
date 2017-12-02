@@ -24,15 +24,15 @@ super <- super %>% mutate(horario = if_else(hora_pura %in% 08:09, "08-10", # 14h
                                             if_else(hora_pura %in% 10:11, "10-12",
                                                     if_else(hora_pura %in% 12:14, "12-13",
                                                             if_else(hora_pura %in% 14:15, "14-16",
-                                                                if_else(hora_pura %in% 16:17, "16-18",
-                                                                    if_else(hora_pura %in% 18:24, "18h+", "06-08")))))))
+                                                                    if_else(hora_pura %in% 16:17, "16-18",
+                                                                            if_else(hora_pura %in% 18:24, "18h+", "06-08")))))))
 r <- setNames(do.call(rbind.data.frame, strsplit(sessoes_abertas$maquina, "-")), c("lab", "maquina"))
 super <- super %>% mutate(lab = r$lab)
 
 # acessos por lab
 lab <- super
 lab<- lab %>% group_by(lab, usuario) %>% mutate(n_acessos=n()) #%>%
-  inner_join(lab, by='usuario')
+inner_join(lab, by='usuario')
 lab
 # acessos pelo dia do mes e da semana
 sessoes <- sessoes_abertas %>% subset(select=c("dia_da_semana", "dia_do_mes"))
@@ -53,18 +53,18 @@ sessoes_abertas <- sessoes_abertas %>% mutate(turno = if_else(hora_pura %in% 05:
 
 # sessoes por blocos de 2 horas
 sessoes_abertas <- sessoes_abertas %>% mutate(horario = if_else(hora_pura %in% 08:09, "08-10", # 14h as 16h maior pico
-                                                              if_else(hora_pura %in% 10:11, "10-12",
-                                                                      if_else(hora_pura %in% 12:13, "12-13",
-                                                                        if_else(hora_pura %in% 14:15, "14-16",
-                                                                          if_else(hora_pura %in% 16:17, "16-18",
-                                                                            if_else(hora_pura %in% 18:24, "18h+", "06-08")))))))
+                                                                if_else(hora_pura %in% 10:11, "10-12",
+                                                                        if_else(hora_pura %in% 12:13, "12-13",
+                                                                                if_else(hora_pura %in% 14:15, "14-16",
+                                                                                        if_else(hora_pura %in% 16:17, "16-18",
+                                                                                                if_else(hora_pura %in% 18:24, "18h+", "06-08")))))))
 
 sessoes_abertas %>% ggplot(aes(x = horario)) + geom_bar() # 14h as 16h é o horário de pico 
 
 # graficos do turno de acesso por lcc
 sessoes_abertas %>% ggplot(aes(x = lab)) + geom_bar()
 sessoes_abertas %>% ggplot(aes(x = turno)) + geom_bar()
-sessoes_abertas %>% ggplot(aes(x = hora_pura)) + geom_bar() # ao contrario do que se esperava, 
+sessoes_abertas %>% ggplot(aes(x = hora_pura)) + geom_bar() # ao contrario do que se esperava,
 
 #o horario de mais acesso ao lcc é as 10 hrs
 lcc2_acesso <- sessoes_abertas %>% filter(lab == "lcc2")
@@ -85,144 +85,93 @@ acessos_maquinas <- sessoes_por_maquina %>% group_by(maquina) %>% summarise(num_
 acessos_maquinas <- acessos_maquinas[order(acessos_maquinas$num_acessos,decreasing = T),] # As do começo do lcc2
 
 ########################### setup para o dataframe do kmeans ###############################
-# Cada bloco representa uma coluna sendo adicionada ao dataframe
+# Cada bloco representa uma coluna sendo adicionada ao dataframe acessos_usuario
 
 teste <- super %>% subset(select = c("usuario","lab"))# Seleciona apenas os atributos que me interessam
 teste <- teste %>% group_by(usuario,lab) %>% summarise(num_acessos = n()) # Sumarizo os acessos
 a <- teste %>% filter(lab == "lcc1") # Filtro de acordo com o meu interesse
 names(a)[3] <- c("lcc1") # Nomeio a coluna
-a <- a[,-2] # Retiro a coluna que não me interessa
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario") # Agrupo com o dataframe principal
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,3][is.na(acessos_usuarios[,3])] <- 0 # Onde tiver NA coloco 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario") # Agrupo com o dataframe principal
 
 teste <- super %>% subset(select = c("usuario","lab"))
 teste <- teste %>% group_by(usuario,lab) %>% summarise(num_acessos = n())
 a <- teste %>% filter(lab == "lcc2")
 names(a)[3] <- c("lcc2")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,4][is.na(acessos_usuarios[,4])] <- 0
-
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","dia_da_semana"))
 teste <- teste %>% group_by(usuario,dia_da_semana) %>% summarise(num_acessos = n())
 a <- teste %>% filter(dia_da_semana == "Mon")
 names(a)[3] <- c("Mon")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,5][is.na(acessos_usuarios[,5])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","dia_da_semana"))
 teste <- teste %>% group_by(usuario,dia_da_semana) %>% summarise(num_acessos = n())
 a <- teste %>% filter(dia_da_semana == "Tues")
 names(a)[3] <- c("Tues")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,6][is.na(acessos_usuarios[,6])] <- 0
-
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","dia_da_semana"))
 teste <- teste %>% group_by(usuario,dia_da_semana) %>% summarise(num_acessos = n())
 a <- teste %>% filter(dia_da_semana == "Wed")
 names(a)[3] <- c("Wed")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,7][is.na(acessos_usuarios[,7])] <- 0
-
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","dia_da_semana"))
 teste <- teste %>% group_by(usuario,dia_da_semana) %>% summarise(num_acessos = n())
 a <- teste %>% filter(dia_da_semana == "Thurs")
 names(a)[3] <- c("Thurs")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,8][is.na(acessos_usuarios[,8])] <- 0
-
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","dia_da_semana"))
 teste <- teste %>% group_by(usuario,dia_da_semana) %>% summarise(num_acessos = n())
 a <- teste %>% filter(dia_da_semana == "Fri")
 names(a)[3] <- c("Fri")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,9][is.na(acessos_usuarios[,9])] <- 0
-
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "06-08")
 names(a)[3] <- c("6h-8h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,10][is.na(acessos_usuarios[,10])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "08-10")
 names(a)[3] <- c("8h-10h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,11][is.na(acessos_usuarios[,11])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "10-12")
 names(a)[3] <- c("10h-12h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,12][is.na(acessos_usuarios[,12])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "12-13")
 names(a)[3] <- c("12h-14h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,13][is.na(acessos_usuarios[,13])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "14-16")
 names(a)[3] <- c("14h-16h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,14][is.na(acessos_usuarios[,14])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "16-18")
 names(a)[3] <- c("16h-18h")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,15][is.na(acessos_usuarios[,15])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
 teste <- super %>% subset(select = c("usuario","horario"))
 teste <- teste %>% group_by(usuario,horario) %>% summarise(num_acessos = n())
 a <- teste %>% filter(horario == "18h+")
 names(a)[3] <- c("18h+")
-a <- a[,-2]
-acessos_usuarios <- full_join(acessos_usuarios,a, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
-acessos_usuarios[,16][is.na(acessos_usuarios[,16])] <- 0
+acessos_usuarios <- full_join(acessos_usuarios,a[-2], by = "usuario")
 
-teste <- super %>% subset(select = c("usuario","maquina"))
-teste <- teste %>% group_by(usuario) %>% summarise(num_acessos = n())
-names(teste)[2] <- c("acesso__por_maquina")
-acessos_usuarios <- full_join(acessos_usuarios,teste, by = "usuario")
-#tabela <- full_join(a,b,by = "usuario")
+acessos_usuarios[,1:16][is.na(acessos_usuarios[,1:16])] <- 0 # Substituindo os NA por zero
 
 dataKmeans <- acessos_usuarios %>% subset(select = c("num_acessos","6h-8h","8h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+")) # filtrando para apenas número de acessos e horários
 
@@ -230,29 +179,54 @@ dataKmeans <- acessos_usuarios %>% subset(select = c("num_acessos","6h-8h","8h-1
 distancia = as.matrix(dist(dataKmeans)) # Matriz de dissimilaridade
 clus <- kmeans(dataKmeans,centers = 2) 
 sil1 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 2 centros
-clus <- kmeans(dataKmeans,centers = 3)
-sil2 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 3 centros
-clus <- kmeans(dataKmeans,centers = 4)
-sil3 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 4 centros
-clus <- kmeans(dataKmeans,centers = 5)
-sil4 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 5 centros
-clus <- kmeans(dataKmeans,centers = 6)
-sil5 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 6 centros
-clus <- kmeans(dataKmeans,centers = 7)
-sil6 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 7 centros
-clus <- kmeans(dataKmeans,centers = 8)
-sil7 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 8 centros
-clus <- kmeans(dataKmeans,centers = 9)
-sil8 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 9 centros
-clus <- kmeans(dataKmeans,centers = 10)
-sil9 <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 10 centros
+dataSil <- data.frame(centros = 2,distSil = sil1)
 
-dataSil <- data.frame(centros = c(2,3,4,5,6,7,8,9,10),distSil = c(sil1,sil2,sil3,sil4,sil5,sil6,sil7,sil8,sil9)) # dataframe dos silhouettes relacionando centrosxsilhouette
+for(i in 3:10){ # Silhouette de 3 a 10 centros
+  set.seed(10)
+  clus = kmeans(dataKmeans,centers = i)
+  sill <- mean(silhouette(clus$cluster,dmatrix = distancia^2)[,3])
+  dfAux <-  data.frame(centros = i,distSil = sill)
+  dataSil <- rbind(dataSil,dfAux)
+}
+
 dataSil %>% ggplot(aes(x = centros,y = distSil)) + geom_line() # plotando o gráfico
 
 ############ K-MEANS ############
-clus <- kmeans(dataKmeans,centers = 3) # kmeans com 2 centros
+clus <- kmeans(dataKmeans,centers = 2) # kmeans com 2 centros
 clus$centers # Verificando os centros
 table(clus$cluster) # Vendo quantos pontos estão em cada grupo 
 clusplot(dataKmeans,clus$cluster,color = T,shade = T) # plotando o gráfico do kmeans
 
+########### Pegando os dados do número de acessos até o  3 quartil ###################
+summary(dataKmeans) # Verificando média,mediana e quartis
+dadosMenores = dataKmeans %>% filter(num_acessos <= 12) # Filtrando o acesso até o 3 quartil
+
+######### Silhouette de dadosMenores ############
+distancia = as.matrix(dist(dadosMenores)) # Matriz de dissimilaridade
+clus2 <- kmeans(dadosMenores,centers = 2) 
+sil11 <- mean(silhouette(clus2$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 2 centros
+dfSil <- data.frame(centros = 2,distS = sil11)
+
+for(i in 3:10){ # Silhouette de 3 a 10 centros
+  set.seed(12)
+  clus2 = kmeans(dadosMenores,centers = i)
+  silT <- mean(silhouette(clus2$cluster,dmatrix = distancia^2)[,3])
+  df2 <-  data.frame(centros = i,distS = silT)
+  dfSil <- rbind(dfSil,df2)
+}
+
+dfSil %>% ggplot(aes(x = centros,y = distS)) + geom_line() # plotando o gráfico
+
+############# kmeans do dadosMenores ############
+clus2 <- kmeans(dadosMenores, centers = 2) # kmeans desse df com 2 centros
+clusplot(dadosMenores,clus2$cluster,color = T, shade = T) # Plotagem do kmeans
+table(clus2$cluster) # Quantidade de usuários em cada cluster
+clus2$centers # Verificando os dados dos centros 
+
+##### Olhando usuários com apenas um acesso ######
+super <- super %>% group_by(usuario) %>% mutate(n_acessos=n()) # adicionando a coluna n_acessos no super
+dadosUmAcesso <- super %>% group_by(usuario) %>% filter(n_acessos == 1) # filtando usuários com apenas um acesso
+dadosUmAcesso %>% ggplot(aes(x = dia_do_mes)) + geom_bar() # plotando dia do mês
+dadosUmAcesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar() # plotando dia da semana
+dadosUmAcesso %>% ggplot(aes(x = lab)) + geom_bar() # plotando lab
+dadosUmAcesso %>% ggplot(aes(x = horario)) + geom_bar() # plotando horário(blocos de 2 horas)
