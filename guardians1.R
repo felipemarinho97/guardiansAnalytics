@@ -4,8 +4,8 @@ library(dplyr)
 library(lubridate)
 library(ggplot2)
 library(tidyr)
-library(cluster) # Adicionei pra plotar o kmeans
-library(fpc) # Adicionei pra plotar o kmeans
+library(cluster)
+library(fpc)
 
 #setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
 setwd("/Users/amandaluna/Documents/guardiansAnalytics") # workspace Amanda
@@ -175,6 +175,10 @@ acessos_usuarios[,1:16][is.na(acessos_usuarios[,1:16])] <- 0 # Substituindo os N
 
 dataKmeans <- acessos_usuarios %>% subset(select = c("num_acessos","6h-8h","8h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+")) # filtrando para apenas número de acessos e horários
 
+# Tentando identificar possíveis outliers com um boxplot
+mediana_acessos <- dataKmeans %>% mutate(Mediana = median(num_acessos))
+mediana_acessos %>% ggplot(aes(x = Mediana, y = num_acessos)) + geom_boxplot(alpha = 1/8, na.rm = T)
+
 ######################### Vendo o silhouette #############################
 distancia = as.matrix(dist(dataKmeans)) # Matriz de dissimilaridade
 clus <- kmeans(dataKmeans,centers = 2) 
@@ -199,7 +203,11 @@ clusplot(dataKmeans,clus$cluster,color = T,shade = T) # plotando o gráfico do k
 
 ########### Pegando os dados do número de acessos até o  3 quartil ###################
 summary(dataKmeans) # Verificando média,mediana e quartis
-dadosMenores = dataKmeans %>% filter(num_acessos <= 12) # Filtrando o acesso até o 3 quartil
+dadosMenores = dataKmeans %>% filter(num_acessos <= 19) # Filtrando o acesso até o 3 quartil
+
+# Tentando identificar possíveis outliers com um boxplot
+mediana_acessosMenores <- dadosMenores %>% mutate(Mediana = median(num_acessos))
+mediana_acessosMenores %>% ggplot(aes(x = Mediana, y = num_acessos)) + geom_boxplot(alpha = 1/8, na.rm = T)
 
 ######### Silhouette de dadosMenores ############
 distancia = as.matrix(dist(dadosMenores)) # Matriz de dissimilaridade
