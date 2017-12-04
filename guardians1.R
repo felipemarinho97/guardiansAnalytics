@@ -6,7 +6,7 @@ library(ggplot2)
 library(tidyr)
 library(cluster)
 library(fpc)
-library(flexclust)
+library(Gmedian)
 
 #setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
 setwd("/Users/amandaluna/Documents/guardiansAnalytics") # workspace Amanda
@@ -234,9 +234,11 @@ clus2$centers # Verificando os dados dos centros
 acessoCluster <- kcca(acessos_usuarios$num_acessos, k=3, family=kccaFamily("kmedians"),save.data=TRUE)
 acessoCluster
 plot(acessoCluster)
-acessoCluster <- kcca(dataKmeans, k=3, family=kccaFamily("kmedians"),save.data=TRUE)
-acessoCluster
-plot(acessoCluster)
+acessoCluster <- kcca(dataKmeans, k=8, family=kccaFamily("kmedians"),save.data=TRUE)
+acessoCluster1 <- kGmedian(dataKmeans, ncenters=2)
+
+acessoCluster1
+plot(acessoCluster1)
 
 ##### Olhando usuários com apenas um acesso ######
 super <- super %>% group_by(usuario) %>% mutate(n_acessos=n()) # adicionando a coluna n_acessos no super
@@ -246,3 +248,5 @@ dadosUmAcesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar() # plotando dia da 
 dadosUmAcesso %>% ggplot(aes(x = lab)) + geom_bar() # plotando lab
 dadosUmAcesso %>% ggplot(aes(x = horario)) + geom_bar() # plotando horário(blocos de 2 horas)
 
+plot(dataKmeans, col = acessoCluster1$cluster, main="kmedian")
+points(acessoCluster1$centers, col = 1:2, pch = 8, cex = 2)
