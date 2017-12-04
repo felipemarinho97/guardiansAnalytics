@@ -6,6 +6,7 @@ library(ggplot2)
 library(tidyr)
 library(cluster)
 library(fpc)
+library(flexclust)
 
 #setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
 setwd("/Users/amandaluna/Documents/guardiansAnalytics") # workspace Amanda
@@ -33,7 +34,7 @@ super <- super %>% mutate(lab = r$lab)
 lab <- super
 lab<- lab %>% group_by(lab, usuario) %>% mutate(n_acessos=n()) #%>%
 inner_join(lab, by='usuario')
-lab
+head(lab)
 # acessos pelo dia do mes e da semana
 sessoes <- sessoes_abertas %>% subset(select=c("dia_da_semana", "dia_do_mes"))
 freq_dia <- sessoes %>% group_by(dia_da_semana, dia_do_mes) %>% summarise(num_acessos = n())
@@ -215,8 +216,8 @@ clus2 <- kmeans(dadosMenores,centers = 2)
 sil11 <- mean(silhouette(clus2$cluster,dmatrix = distancia^2)[,3]) # Silhouette com 2 centros
 dfSil <- data.frame(centros = 2,distS = sil11)
 
+set.seed(12)
 for(i in 3:10){ # Silhouette de 3 a 10 centros
-  set.seed(12)
   clus2 = kmeans(dadosMenores,centers = i)
   silT <- mean(silhouette(clus2$cluster,dmatrix = distancia^2)[,3])
   df2 <-  data.frame(centros = i,distS = silT)
@@ -230,6 +231,12 @@ clus2 <- kmeans(dadosMenores, centers = 2) # kmeans desse df com 2 centros
 clusplot(dadosMenores,clus2$cluster,color = T, shade = T) # Plotagem do kmeans
 table(clus2$cluster) # Quantidade de usuários em cada cluster
 clus2$centers # Verificando os dados dos centros 
+acessoCluster <- kcca(acessos_usuarios$num_acessos, k=3, family=kccaFamily("kmedians"),save.data=TRUE)
+acessoCluster
+plot(acessoCluster)
+acessoCluster <- kcca(dataKmeans, k=3, family=kccaFamily("kmedians"),save.data=TRUE)
+acessoCluster
+plot(acessoCluster)
 
 ##### Olhando usuários com apenas um acesso ######
 super <- super %>% group_by(usuario) %>% mutate(n_acessos=n()) # adicionando a coluna n_acessos no super
@@ -238,3 +245,4 @@ dadosUmAcesso %>% ggplot(aes(x = dia_do_mes)) + geom_bar() # plotando dia do mê
 dadosUmAcesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar() # plotando dia da semana
 dadosUmAcesso %>% ggplot(aes(x = lab)) + geom_bar() # plotando lab
 dadosUmAcesso %>% ggplot(aes(x = horario)) + geom_bar() # plotando horário(blocos de 2 horas)
+
