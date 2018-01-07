@@ -1,4 +1,3 @@
-library(tidyverse)
 library(readr)
 library(dplyr)
 library(lubridate)
@@ -8,9 +7,7 @@ library(cluster)
 library(fpc)
 library(Gmedian)
 
-#setwd("~/Área de Trabalho/guardians/guardiansAnalytics/") # workspace Livia
-setwd("/Users/amandaluna/Documents/guardiansAnalytics") # workspace Amanda
-dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
+dados <- read_csv("dados/logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
 
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
 sessoes_abertas <- dados %>% filter(status == "opened")
