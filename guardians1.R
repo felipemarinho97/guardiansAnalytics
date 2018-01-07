@@ -250,3 +250,13 @@ dadosUmAcesso %>% ggplot(aes(x = horario)) + geom_bar() # plotando horário(bloc
 
 plot(dataKmeans, col = acessoCluster1$cluster, main="kmedian")
 points(acessoCluster1$centers, col = 1:2, pch = 8, cex = 2)
+
+##### Quem compõe a maior parte dos nossos usuários? #####
+# Usuários com 0 a 10 acessos são maioria (sendo 0 a 5 maioria massiva)
+# Seria melhor fazer de 0 a 5?
+hist(acessos_usuarios$num_acessos,main = "Histograma do número de acessos", xlab = "Número de acessos", ylab = "Frequência") # Histograma dos acessos
+maioria = acessos_usuarios %>% filter(num_acessos <= 10) # Filtrando os usuários com até 10 acessos
+dias <- data.frame(dia = c("Segunda","Terca","Quarta","Quinta","Sexta"), acessos = c(sum(maioria$Mon),sum(maioria$Tues),sum(maioria$Wed),sum(maioria$Thurs),sum(maioria$Fri)))
+horarios <- data.frame(hora = c("6h-8h","8h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+"), acessos = c(sum(maioria$`6h-8h`),sum(maioria$`8h-10h`),sum(maioria$`10h-12h`),sum(maioria$`12h-14h`),sum(maioria$`14h-16h`),sum(maioria$`16h-18h`),sum(maioria$`18h+`)))
+dias %>% ggplot(aes(x = dia,y = acessos)) + geom_bar(stat = "identity")
+horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
