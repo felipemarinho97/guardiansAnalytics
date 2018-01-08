@@ -270,6 +270,7 @@ dias %>% ggplot(aes(x = dia,y = acessos)) + theme_bw() + geom_bar(stat = "identi
 horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
 
 usuarios <- dados 
+usuarios <- usuarios %>% mutate(hora = hour(usuarios$hora))
 usuarios <- usuarios[order(usuarios$usuario),]
 d <- as.data.frame(matrix(nrow = 3809, ncol = 4))
 indice = 1
@@ -278,10 +279,10 @@ for( i in 1:7618) {
     d[indice,1] <- (usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60
     d[indice,2] <- usuarios[i+1,"usuario"]
     d[indice,3] <- usuarios[i+1,"dia_da_semana"]
-    # d[indice,4] <- usuarios[i+1,"hora"]
+    d[indice,4] <- usuarios[i+1,"hora"]
     indice = indice + 1
     i = i + 1 
   }
 }
 
-d<- d %>% na.omit
+d<- d %>% na.omit %>% rename("tempo" = V1, "usuario" = V2, "dia" = V3, "hora" = V4)
