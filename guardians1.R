@@ -268,3 +268,20 @@ dias$dia <- factor(dias1$dia, levels = dias$dia[order(dias$acessos)]) #faz com q
 horarios <- data.frame(hora = c("06h-08h","08h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+"), acessos = c(sum(maioria$`06h-8h`),sum(maioria$`08h-10h`),sum(maioria$`10h-12h`),sum(maioria$`12h-14h`),sum(maioria$`14h-16h`),sum(maioria$`16h-18h`),sum(maioria$`18h+`)))
 dias %>% ggplot(aes(x = dia,y = acessos)) + theme_bw() + geom_bar(stat = "identity")
 horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
+
+usuarios <- dados 
+usuarios <- usuarios[order(usuarios$usuario),]
+d <- as.data.frame(matrix(nrow = 3809, ncol = 4))
+indice = 1
+for( i in 1:7618) {
+  if(usuarios[i+1,"status"] == "closed" && usuarios[i,"status"] == "opened") {
+    d[indice,1] <- (usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60
+    d[indice,2] <- usuarios[i+1,"usuario"]
+    d[indice,3] <- usuarios[i+1,"dia_da_semana"]
+    # d[indice,4] <- usuarios[i+1,"hora"]
+    indice = indice + 1
+    i = i + 1 
+  }
+}
+
+d<- d %>% na.omit
