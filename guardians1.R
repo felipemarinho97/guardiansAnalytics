@@ -246,13 +246,13 @@ indice = 1
 for( i in 1:7618) {
   if(usuarios[i+1,"status"] == "closed" && usuarios[i,"status"] == "opened") {
     if(usuarios[i+1,"usuario"] == usuarios[i,"usuario"]){
-    tempo_sessao[indice,1] <- ((usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60)
-    tempo_sessao[indice,2] <- usuarios[i+1,"usuario"]
-    tempo_sessao[indice,3] <- usuarios[i+1,"dia_da_semana"]
-    tempo_sessao[indice,4] <- usuarios[i+1,"hora_pura"]
-    indice = indice + 1
-    i = i + 1 
-  }
+      tempo_sessao[indice,1] <- round(as.numeric((usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60), 3)
+      tempo_sessao[indice,2] <- usuarios[i+1,"usuario"]
+      tempo_sessao[indice,3] <- usuarios[i+1,"dia_da_semana"]
+      tempo_sessao[indice,4] <- usuarios[i+1,"hora_pura"]
+      indice = indice + 1
+      i = i + 1 
+    }
   }
 }
 
