@@ -242,7 +242,7 @@ usuarios <- usuarios %>% mutate(hora_pura = hour(usuarios$hora))
 usuarios <- usuarios[order(usuarios$usuario),]
 tempo_sessao <- as.data.frame(matrix(nrow = 3809, ncol = 4))
 indice = 1
-7618
+
 for( i in 1:7618) {
   if(usuarios[i+1,"status"] == "closed" && usuarios[i,"status"] == "opened") {
     if(usuarios[i+1,"usuario"] == usuarios[i,"usuario"]){
