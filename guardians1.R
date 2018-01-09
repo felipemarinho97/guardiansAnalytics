@@ -208,6 +208,7 @@ clus <- kmeans(dataKmeans,centers = 2) # kmeans com 2 centros
 clus$centers # Verificando os centros
 table(clus$cluster) # Vendo quantos pontos estão em cada grupo 
 clusplot(dataKmeans,clus$cluster,color = T,shade = T) # plotando o gráfico do kmeans
+clus$withinss
 
 ########### Pegando os dados do número de acessos até o  3 quartil ###################
 summary(dataKmeans) # Verificando média,mediana e quartis
@@ -244,8 +245,10 @@ plot(acessoCluster)
 acessoCluster <- kcca(dataKmeans, k=8, family=kccaFamily("kmedians"),save.data=TRUE)
 acessoCluster1 <- kGmedian(dataKmeans, ncenters=2)
 
-acessoCluster1
-plot(acessoCluster1)
+plot(dataKmeans, col = acessoCluster1$cluster, main="kmedian")
+points(acessoCluster1$centers, col = 1:2, pch = 8, cex = 2)
+acessoCluster1$centers
+acessoCluster1$size
 
 ##### Olhando usuários com apenas um acesso ######
 super <- super %>% group_by(usuario) %>% mutate(n_acessos=n()) # adicionando a coluna n_acessos no super
@@ -254,9 +257,6 @@ dadosUmAcesso %>% ggplot(aes(x = dia_do_mes)) + geom_bar() # plotando dia do mê
 dadosUmAcesso %>% ggplot(aes(x = dia_da_semana)) + geom_bar() # plotando dia da semana
 dadosUmAcesso %>% ggplot(aes(x = lab)) + geom_bar() # plotando lab
 dadosUmAcesso %>% ggplot(aes(x = horario)) + geom_bar() # plotando horário(blocos de 2 horas)
-
-plot(dataKmeans, col = acessoCluster1$cluster, main="kmedian")
-points(acessoCluster1$centers, col = 1:2, pch = 8, cex = 2)
 
 ##### Quem compõe a maior parte dos nossos usuários? #####
 # Usuários com 0 a 10 acessos são maioria (sendo 0 a 5 maioria massiva)
