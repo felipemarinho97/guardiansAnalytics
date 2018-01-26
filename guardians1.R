@@ -240,20 +240,28 @@ horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
 usuarios <- dados 
 usuarios <- usuarios %>% mutate(hora_pura = hour(usuarios$hora))
 usuarios <- usuarios[order(usuarios$usuario),]
-tempo_sessao <- as.data.frame(matrix(nrow = 3809, ncol = 5))
+tempo_sessao <- as.data.frame(matrix(nrow = 3570, ncol = 5))
 indice = 1
 
 for( i in 1:7618) {
+  tempo_sessao[indice,3] <- usuarios[i,"dia_da_semana"]
   if(usuarios[i+1,"status"] == "closed" && usuarios[i,"status"] == "opened") {
     if(usuarios[i+1,"usuario"] == usuarios[i,"usuario"]){
       tempo_sessao[indice,1] <- round(as.numeric((usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60), 3)
       tempo_sessao[indice,2] <- usuarios[i+1,"usuario"]
-      tempo_sessao[indice,3] <- usuarios[i+1,"dia_da_semana"]
       tempo_sessao[indice,4] <- usuarios[i,"hora_pura"]
       tempo_sessao[indice,5] <- usuarios[i+1,"hora_pura"]
       indice = indice + 1
       i = i + 1 
     }
+  else {
+    if(usuarios[i,"status"] == "opened") {
+      tempo_sessao[indice,4] <- usuarios[i,"hora_pura"]
+    } else {
+      tempo_sessao[indice,5] <- usuarios[i+1,"hora_pura"]
+    }
+    indice = indice + 1
+  }
   }
 }
 
