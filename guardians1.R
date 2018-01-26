@@ -240,7 +240,7 @@ horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
 usuarios <- dados 
 usuarios <- usuarios %>% mutate(hora_pura = hour(usuarios$hora))
 usuarios <- usuarios[order(usuarios$usuario),]
-tempo_sessao <- as.data.frame(matrix(nrow = 3809, ncol = 4))
+tempo_sessao <- as.data.frame(matrix(nrow = 3809, ncol = 5))
 indice = 1
 
 for( i in 1:7618) {
@@ -249,11 +249,20 @@ for( i in 1:7618) {
       tempo_sessao[indice,1] <- round(as.numeric((usuarios[i+1,"hora"] - usuarios[i,"hora"]) / 60), 3)
       tempo_sessao[indice,2] <- usuarios[i+1,"usuario"]
       tempo_sessao[indice,3] <- usuarios[i+1,"dia_da_semana"]
-      tempo_sessao[indice,4] <- usuarios[i+1,"hora_pura"]
+      tempo_sessao[indice,4] <- usuarios[i,"hora_pura"]
+      tempo_sessao[indice,5] <- usuarios[i+1,"hora_pura"]
       indice = indice + 1
       i = i + 1 
     }
   }
 }
 
-tempo_sessao <- tempo_sessao %>% na.omit %>% rename("tempo" = V1, "usuario" = V2, "dia" = V3, "hora" = V4)
+tempo_sessao <- tempo_sessao %>% na.omit %>% rename("tempo" = V1, "usuario" = V2, "dia" = V3, "hora_inicio" = V4, "hora_fim" = V5)
+boxplot(tempo_sessao$tempo, data = tempo_sessao)
+boxplot(tempo~hora_inicio, data = tempo_sessao)
+boxplot(tempo~dia, data = tempo_sessao)
+carac_sessoes <- full_join(tempo_sessao, acessos_usuarios, by = "usuario")
+carac_sessoes <- carac_sessoes %>% group_by(usuario) %>% mutate(tempo_total = sum(tempo/60), mediana_tempo = median(tempo/60), media_tempo = mean(tempo/60))
+sem_outlier <- carac_sessoes %>% mutate(num_acessos = ifelse(num_acessos >= 25,NA,num_acessos)) %>% na.omit() 
+# nao eh possivel identificar um padrao dos acessos
+sem_outlier %>% ggplot(aes(num_acessos, mediana_tempo)) + geom_point()
