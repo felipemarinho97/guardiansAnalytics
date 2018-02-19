@@ -7,7 +7,8 @@ library(cluster)
 library(fpc)
 library(Gmedian)
 
-dados <- read_csv("dados/logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
+#dados <- read_csv("dados/logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
+dados <- read_csv("logs.txt", col_names = c("mes", "dia_do_mes", "hora", "maquina", "status", "usuario"))
 
 dados <- dados %>% mutate(data = paste("2017", mes, dia_do_mes, sep = "-"), dia_da_semana = wday(data, label = T))
 sessoes_abertas <- dados %>% filter(status == "opened")
@@ -52,7 +53,7 @@ sessoes_abertas <- sessoes_abertas %>% mutate(turno = if_else(hora_pura %in% 05:
 # sessoes por blocos de 2 horas
 sessoes_abertas <- sessoes_abertas %>% mutate(horario = if_else(hora_pura %in% 08:09, "08-10", # 14h as 16h maior pico
                                                                 if_else(hora_pura %in% 10:11, "10-12",
-                                                                        if_else(hora_pura %in% 12:13, "12-13",
+                                                                        if_else(hora_pura %in% 12:13, "12-14",
                                                                                 if_else(hora_pura %in% 14:15, "14-16",
                                                                                         if_else(hora_pura %in% 16:17, "16-18",
                                                                                                 if_else(hora_pura %in% 18:24, "18h+", "06-08")))))))
@@ -180,7 +181,7 @@ clus$withinss
 
 ########### Pegando os dados do número de acessos até o  3 quartil ###################
 summary(dataKmeans) # Verificando média,mediana e quartis
-dadosMenores = dataKmeans %>% filter(num_acessos <= 19) # Filtrando o acesso até o 3 quartil
+dadosMenores = dataKmeans %>% filter(num_acessos <= 10) # Filtrando o acesso até o 3 quartil
 
 # Tentando identificar possíveis outliers com um boxplot
 mediana_acessosMenores <- dadosMenores %>% mutate(Mediana = median(num_acessos))
@@ -233,7 +234,7 @@ hist(acessos_usuarios$num_acessos,main = "Histograma do número de acessos", xla
 maioria = acessos_usuarios %>% filter(num_acessos <= 10) # Filtrando os usuários com até 10 acessos
 dias <- data.frame(dia = c("Segunda","Terca","Quarta","Quinta","Sexta"), acessos = c(sum(maioria$Seg),sum(maioria$Ter),sum(maioria$Qua),sum(maioria$Qui),sum(maioria$Sex))) 
 dias$dia <- factor(dias1$dia, levels = dias$dia[order(dias$acessos)]) #faz com que o plot seja na ordem da coluna dia do data frame
-horarios <- data.frame(hora = c("06h-08h","08h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+"), acessos = c(sum(maioria$`06h-8h`),sum(maioria$`08h-10h`),sum(maioria$`10h-12h`),sum(maioria$`12h-14h`),sum(maioria$`14h-16h`),sum(maioria$`16h-18h`),sum(maioria$`18h+`)))
+horarios <- data.frame(hora = c("06h-08h","08h-10h","10h-12h","12h-14h","14h-16h","16h-18h","18h+"), acessos = c(sum(maioria$`06h-08h`),sum(maioria$`08h-10h`),sum(maioria$`10h-12h`),sum(maioria$`12h-14h`),sum(maioria$`14h-16h`),sum(maioria$`16h-18h`),sum(maioria$`18h+`)))
 dias %>% ggplot(aes(x = dia,y = acessos)) + theme_bw() + geom_bar(stat = "identity")
 horarios %>% ggplot(aes(x = hora,y = acessos)) + geom_bar(stat = "identity")
 
@@ -271,6 +272,7 @@ boxplot(tempo~hora_inicio, data = tempo_sessao)
 boxplot(tempo~dia, data = tempo_sessao)
 carac_sessoes <- full_join(tempo_sessao, acessos_usuarios, by = "usuario")
 carac_sessoes <- carac_sessoes %>% group_by(usuario) %>% mutate(tempo_total = sum(tempo/60), mediana_tempo = median(tempo/60), media_tempo = mean(tempo/60))
-sem_outlier <- carac_sessoes %>% mutate(num_acessos = ifelse(num_acessos >= 25,NA,num_acessos)) %>% na.omit() 
+sem_outlier <- carac_sessoes %>% mutate(num_acessos = ifelse(num_acessos <= 25,NA,num_acessos)) %>% na.omit() 
 # nao eh possivel identificar um padrao dos acessos
 sem_outlier %>% ggplot(aes(num_acessos, mediana_tempo)) + geom_point()
+
