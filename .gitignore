@@ -1,2 +1,5 @@
-dados
-
+.DS_Store
+.RData
+.Rhistory
+*checkpoint.ipynb
+.ipynb_checkpoints
